@@ -12,12 +12,12 @@ objects = obj/kernel.o \
 		  obj/main.o \
 		  obj/iolib.o \
           obj/hwcomm/port.o \
-		  obj/hwcomm/interruptstubs.o \
+		  obj/asm/interruptstubs.o \
 		  obj/hwcomm/interrupts.o \
+		  obj/drivers/keyboard.o \
 		#   obj/memorymanagement.o \
 		#   obj/syscalls.o \
 		#   obj/multitasking.o \
-		#   obj/drivers/keyboard.o \
 
 obj/%.o: src/%.cpp
 	mkdir -p $(@D)

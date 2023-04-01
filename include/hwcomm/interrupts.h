@@ -36,6 +36,29 @@ namespace microkernel
         class InterruptManager
         {
         friend class InterruptHandler;
+        
+        public:
+            /**
+             * @brief Construct a new Interrupt Manager object.
+             * 
+             * @param hw_interrupt_offset Hardware interrupt offset. 
+             * @param gdt Global descriptor table.
+             */
+            InterruptManager(
+                uint16_t hw_interrupt_offset, 
+                GlobalDescriptorTable* gdt
+            );
+                                
+            ~InterruptManager();
+
+            /**
+             * @brief Getter for the Hardware Interrupt Offset.
+             */
+            uint16_t get_hw_interrupt_offset();
+            
+            void activate();
+            void deactivate();
+
         protected:
             struct GateDescriptor
             {
@@ -139,27 +162,6 @@ namespace microkernel
             Port8BitSlow pic_slave_command;
             Port8BitSlow pic_slave_data;
 
-        public:
-            /**
-             * @brief Construct a new Interrupt Manager object.
-             * 
-             * @param hw_interrupt_offset Hardware interrupt offset. 
-             * @param gdt Global descriptor table.
-             */
-            InterruptManager(
-                uint16_t hw_interrupt_offset, 
-                GlobalDescriptorTable* gdt
-            );
-                                
-            ~InterruptManager();
-
-            /**
-             * @brief Getter for the Hardware Interrupt Offset.
-             */
-            uint16_t get_hw_interrupt_offset();
-            
-            void activate();
-            void deactivate();
         };
     } // namespace hwcomm
     

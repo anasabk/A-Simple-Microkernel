@@ -18,6 +18,8 @@ void Kernel::run()
     gdt.init();
     printf("Finished initialization.\n");
 
+    drivers::Keyboard my_keyboard(&interrupt_manager);
+
     printf("activating interrupt manager\n");
     interrupt_manager.activate();
     printf("finished activating\n");

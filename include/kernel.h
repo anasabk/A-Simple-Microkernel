@@ -5,6 +5,7 @@
 #include "gdt.h"
 #include "hwcomm/interrupts.h"
 #include "iolib.h"
+#include "drivers/keyboard.h"
 
 namespace microkernel
 {
