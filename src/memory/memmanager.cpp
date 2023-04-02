@@ -46,10 +46,10 @@ void* MemManager::get_stack_chunk(uint32_t t_size) {
     if(last_stack_p - t_size - sizeof(StackChunk) < get_limit())
         return nullptr;
 
-    ((StackChunk*)last_stack_p)->is_free = false;
-    ((StackChunk*)last_stack_p)->next_chunk = nullptr;
-    ((StackChunk*)last_stack_p)->size = t_size;
     uint32_t result = last_stack_p - sizeof(StackChunk);
+    ((StackChunk*)result)->is_free = false;
+    ((StackChunk*)result)->next_chunk = nullptr;
+    ((StackChunk*)result)->size = t_size;
 
     last_stack_p = result - t_size;
     
@@ -57,13 +57,11 @@ void* MemManager::get_stack_chunk(uint32_t t_size) {
 }
 
 void MemManager::free(void* t_stack_p) {
-    StackChunk* target = (StackChunk*)(t_stack_p + sizeof(StackChunk));
-    
-    if(target->is_free)
+    if(((StackChunk*)t_stack_p)->is_free)
         return;
 
-    if((uint32_t)t_stack_p - target->size == last_stack_p) {
-        last_stack_p = (uint32_t)target;
+    if((uint32_t)t_stack_p - ((StackChunk*)t_stack_p)->size == last_stack_p) {
+        last_stack_p = (uint32_t)t_stack_p + sizeof(StackChunk);
         return;
     }
 
@@ -72,20 +70,20 @@ void MemManager::free(void* t_stack_p) {
         temp != nullptr; 
         prev = temp, temp = temp->next_chunk) 
     {
-        if(target > temp)
+        if(t_stack_p > temp)
             break;
     }
 
     if(prev == nullptr) {
-        target->next_chunk = free_list;
-        free_list = target;
+        ((StackChunk*)t_stack_p)->next_chunk = free_list;
+        free_list = ((StackChunk*)t_stack_p);
 
     } else {
-        prev->next_chunk = target;
+        prev->next_chunk = ((StackChunk*)t_stack_p);
 
         // if((uint32_t)t_stack_p - target->size == temp)
         //     target->next_chunk = temp->next_chunk;
         // else
-            target->next_chunk = temp;
+            ((StackChunk*)t_stack_p)->next_chunk = temp;
     }
 }

@@ -16,32 +16,36 @@ uint32_t buya = 0;
 
 void foo(){
     printf("\nfoo\n");
-    int32_t i;
+    int8_t i1;
 
     printf("initialized global(data segment): ");
     printfHex32((uint32_t) &buya);
-    printf("\nlocal variable (stack segment): ");
-    printfHex32((uint32_t) &i);
-    printf("\nfunction address (code segment): ");
+    printf("\nlocal variable (stack segment)  : ");
+    printfHex32((uint32_t) &i1);
+    printf("\nfunction address (code segment) : ");
     printfHex32((uint32_t) &foo);
+    printf("\n");
+    // printfHex32(i1);
+    // printfHex32(i2);
 
-    while(1)
-        printf("1");
+    while(1);
+        // printf("1");
 }
 
 void foo2(){
     printf("\nfoo2\n");
-    int32_t i;
+    int8_t i1;
 
     printf("initialized global(data segment): ");
     printfHex32((uint32_t) &buya);
-    printf("\nlocal variable (stack segment): ");
-    printfHex32((uint32_t) &i);
-    printf("\nfunction address (code segment): ");
+    printf("\nlocal variable (stack segment)  : ");
+    printfHex32((uint32_t) &i1);
+    printf("\nfunction address (code segment) : ");
     printfHex32((uint32_t) &foo2);
+    printf("\n");
 
-    while(1)
-        printf("2");
+    while(1);
+        // printf("2");
 }
 
 void Kernel::run() 
@@ -71,7 +75,7 @@ void Kernel::run()
 
     gdt->init();
 
-    printf("\nGlobal Descriptor Table:\nCode Segment: ");
+    printf("Global Descriptor Table:\nCode Segment: ");
     printfHex16(gdt->get_css());
     printf("\nData Segment:");
     printfHex16(gdt->get_dss());
@@ -79,34 +83,34 @@ void Kernel::run()
     printfHex16(gdt->get_sss());
     printf("\n");
 
-    printf("\nMemory Manager:\n Base: ");
+    printf("Memory Manager:\nBase : ");
     printfHex32(mem_manager->get_base());
-    printf("\nLimit:");
+    printf("\nLimit: ");
     printfHex32(mem_manager->get_limit());
     printf("\n");
 
 
     // Taskmanager task_manager(interrupt_manager);
 
-    printf("Initilizing task foo:");
-    void* chunk = mem_manager->get_stack_chunk(4096);
-    printfHex32((uint32_t)chunk);
-    printf("\n");
-    Task task_foo(gdt, foo, 4096, chunk);
+    printf("Initilizing task foo :");
+    // void* chunk = mem_manager->get_stack_chunk(4096);
+    // printfHex32((uint32_t)chunk);
+    // printf("\n");
+    Task task_foo(gdt, foo, 4096, mem_manager);
 
     printf("Initilizing task foo2:");
-    chunk = mem_manager->get_stack_chunk(4096);
-    printfHex32((uint32_t)chunk);
-    printf("\n");
-    Task task_foo2(gdt, foo2, 4096, chunk);
+    // chunk = mem_manager->get_stack_chunk(4096);
+    // printfHex32((uint32_t)chunk);
+    // printf("\n");
+    Task task_foo2(gdt, foo2, 4096, mem_manager);
 
-    printf("Adding tasks\n");
+    // printf("Adding tasks\n");
     task_manager->add_task(&task_foo);
     task_manager->add_task(&task_foo2);
     
     Keyboard my_keyboard(interrupt_manager);
     
-    printf("starting interrupts\n");
+    // printf("starting interrupts\n");
     interrupt_manager->activate();
 
     while(1);

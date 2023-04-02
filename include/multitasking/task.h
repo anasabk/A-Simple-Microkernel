@@ -8,6 +8,14 @@
 
 namespace microkernel
 {
+    enum State {
+        RUNNING,
+        READY,
+        BLOCKED
+    };
+
+    class Taskmanager;
+
     struct CPUState
     {
         // General registers
@@ -32,21 +40,13 @@ namespace microkernel
         uint32_t eflags;
         uint32_t esp;
         uint32_t ss;
-    };
-
-    enum State {
-        RUNNING,
-        READY,
-        BLOCKED
-    };
-
-    class Taskmanager;
+    } __attribute__((packed));
 
     class Task
     {
         friend class Taskmanager;
     public:
-        Task(GlobalDescriptorTable* t_gdt, void t_entry_point(), uint32_t t_stack_size, void* t_stack_p);
+        Task(GlobalDescriptorTable* t_gdt, void t_entry_point(), uint32_t t_stack_size, MemManager* t_mem_manager);
         ~Task();
 
     private:
