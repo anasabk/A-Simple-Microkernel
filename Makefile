@@ -15,9 +15,10 @@ objects = obj/kernel.o \
 		  obj/asm/interruptstubs.o \
 		  obj/hwcomm/interrupts.o \
 		  obj/drivers/keyboard.o \
-		#   obj/memorymanagement.o \
+		  obj/multitasking/task.o \
+		  obj/multitasking/taskmanager.o \
+		  obj/memory/memmanager.o \
 		#   obj/syscalls.o \
-		#   obj/multitasking.o \
 
 obj/%.o: src/%.cpp
 	mkdir -p $(@D)

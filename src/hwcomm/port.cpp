@@ -1,7 +1,6 @@
 #include "../../include/hwcomm/port.h"
 
 using namespace microkernel;
-using namespace microkernel::hwcomm;
 
 
 Port::Port(uint16_t port_num)

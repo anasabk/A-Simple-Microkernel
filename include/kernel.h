@@ -6,11 +6,11 @@
 #include "hwcomm/interrupts.h"
 #include "iolib.h"
 #include "drivers/keyboard.h"
+#include "multitasking/taskmanager.h"
+
 
 namespace microkernel
 {
-    using namespace hwcomm;
-
     class Kernel
     {
     public:
@@ -20,8 +20,11 @@ namespace microkernel
         void run();
 
     private:
-        GlobalDescriptorTable gdt;
-        InterruptManager interrupt_manager;
+        GlobalDescriptorTable* gdt;
+        InterruptManager* interrupt_manager;
+        Taskmanager* task_manager;
+        MemManager* mem_manager;
+
     };
     
 } // namespace microkernel

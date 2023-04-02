@@ -1,10 +1,7 @@
 #include "hwcomm/interrupts.h"
 
-void printf(char* str);
 
 using namespace microkernel;
-using namespace microkernel::hwcomm;
-
 
 InterruptHandler::InterruptHandler(
     InterruptManager* t_interrupt_manager, 

@@ -1,5 +1,6 @@
 #include "iolib.h"
 
+
 uint16_t* VideoMemory = (uint16_t*)0xb8000;
 uint8_t row = 0, column = 0;
 
@@ -78,8 +79,11 @@ void printfHex16(uint16_t key)
 
 void printfHex32(uint32_t key)
 {
-    printfHex((key >> 24) & 0xFF);
-    printfHex((key >> 16) & 0xFF);
-    printfHex((key >> 8) & 0xFF);
-    printfHex( key & 0xFF);
+    printfHex16((key >> 16) & 0xFFFF);
+    printfHex16( key & 0xFFFF);
+}
+
+void printfHex64(uint64_t key) {
+    printfHex32((key >> 32) & 0xFFFFFFFF);
+    printfHex32(key & 0xFFFFFFFF);
 }

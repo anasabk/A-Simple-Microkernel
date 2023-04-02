@@ -1,8 +1,7 @@
 #include "drivers/keyboard.h"
 
 
-using namespace microkernel::drivers;
-using namespace microkernel::hwcomm;
+using namespace microkernel;
 
 Keyboard::Keyboard(InterruptManager* manager)
     : InterruptHandler(manager, 0x21),

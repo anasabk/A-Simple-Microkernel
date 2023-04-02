@@ -2,20 +2,20 @@
 
 .section .text
 
-.extern _ZN11microkernel6hwcomm16InterruptManager17receive_interruptEhj
+.extern _ZN11microkernel16InterruptManager17receive_interruptEhj
 
 
 .macro HandleException num
-.global _ZN11microkernel6hwcomm16InterruptManager21handle_exception_\num\()Ev
-_ZN11microkernel6hwcomm16InterruptManager21handle_exception_\num\()Ev:
+.global _ZN11microkernel16InterruptManager21handle_exception_\num\()Ev
+_ZN11microkernel16InterruptManager21handle_exception_\num\()Ev:
     movb $\num, (interruptnumber)
     jmp int_bottom
 .endm
 
 
 .macro HandleInterruptRequest num
-.global _ZN11microkernel6hwcomm16InterruptManager29handle_interrupt_request_\num\()Ev
-_ZN11microkernel6hwcomm16InterruptManager29handle_interrupt_request_\num\()Ev:
+.global _ZN11microkernel16InterruptManager29handle_interrupt_request_\num\()Ev
+_ZN11microkernel16InterruptManager29handle_interrupt_request_\num\()Ev:
     movb $\num + IRQ_BASE, (interruptnumber)
     pushl $0
     jmp int_bottom
@@ -75,7 +75,7 @@ int_bottom:
 
     # Save register
     #pusha
-    #pushl %ds
+    pushl %ds
     #pushl %es
     #pushl %fs
     #pushl %gs
@@ -98,7 +98,7 @@ int_bottom:
     # Call C++ Handler
     pushl %esp
     push (interruptnumber)
-    call _ZN11microkernel6hwcomm16InterruptManager17receive_interruptEhj
+    call _ZN11microkernel16InterruptManager17receive_interruptEhj
     # add %esp, 6
     mov %eax, %esp # Switch the stack
 
@@ -106,7 +106,6 @@ int_bottom:
     #pop %gs
     #pop %fs
     #pop %es
-    #pop %ds
     #popa
 
     popl %eax
@@ -118,12 +117,13 @@ int_bottom:
     popl %edi
     popl %ebp
 
+    pop %ds
 
     add $4, %esp
 
 
-.global _ZN11microkernel6hwcomm16InterruptManager16ignore_interruptEv
-_ZN11microkernel6hwcomm16InterruptManager16ignore_interruptEv:
+.global _ZN11microkernel16InterruptManager16ignore_interruptEv
+_ZN11microkernel16InterruptManager16ignore_interruptEv:
 
     iret
 

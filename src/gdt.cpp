@@ -8,7 +8,8 @@ GlobalDescriptorTable::GlobalDescriptorTable()
     : null_ss(0, 0, 0),
       unused_ss(0, 0, 0),
       code_ss(0, 64*1024*1024, 0x9A),
-      data_ss(0, 64*1024*1024, 0x92)
+      data_ss(0, 64*1024*1024, 0x92),
+      stack_ss(0, 64*1024*1024, 0x96)
 {
 }
 
@@ -32,6 +33,10 @@ uint16_t GlobalDescriptorTable::get_dss()
 uint16_t GlobalDescriptorTable::get_css()
 {
     return (uint8_t*)&code_ss - (uint8_t*)this;
+}
+
+uint16_t GlobalDescriptorTable::get_sss() {
+    return (uint8_t*)&stack_ss - (uint8_t*)this;
 }
 
 GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(

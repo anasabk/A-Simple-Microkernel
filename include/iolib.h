@@ -4,7 +4,7 @@
 #include "common/types.h"
 
 
-using namespace microkernel::common;
+using namespace microkernel;
 
 void printf(char* str);
 
@@ -17,6 +17,8 @@ void printfHex(uint8_t key);
 void printfHex16(uint16_t key);
 
 void printfHex32(uint32_t key);
+
+void printfHex64(uint64_t key);
 
 
 #endif

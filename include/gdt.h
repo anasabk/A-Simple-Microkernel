@@ -6,10 +6,8 @@
 
 namespace microkernel
 {
-    using namespace microkernel::common;
-
     class GlobalDescriptorTable {
-    public:
+    protected:
         class SegmentDescriptor {
         private:
             uint16_t limit_lo;
@@ -30,6 +28,7 @@ namespace microkernel
         SegmentDescriptor unused_ss;
         SegmentDescriptor code_ss;
         SegmentDescriptor data_ss;
+        SegmentDescriptor stack_ss;
 
     public:
         GlobalDescriptorTable();
@@ -46,6 +45,11 @@ namespace microkernel
          * @brief Get the Data Segment Selector.
          */
         uint16_t get_dss();
+
+        /**
+         * @brief Get the Stack Segment Selector.
+         */
+        uint16_t get_sss();
         
     };
 

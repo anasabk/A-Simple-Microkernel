@@ -6,24 +6,18 @@
 
 namespace microkernel
 {
-    namespace drivers
+    class Keyboard : public InterruptHandler
     {
-        using namespace hwcomm;
+    public:
+        Keyboard(InterruptManager* manager);
+        ~Keyboard();
 
-        class Keyboard : public InterruptHandler
-        {
-        public:
-            Keyboard(InterruptManager* manager);
-            ~Keyboard();
+        virtual uint32_t handle_interrupt(uint32_t esp);
 
-            virtual uint32_t handle_interrupt(uint32_t esp);
-
-        private:
-            Port8Bit data_port;
-            Port8Bit command_port;
-        };
-        
-    } // namespace hwcomm
+    private:
+        Port8Bit data_port;
+        Port8Bit command_port;
+    };
     
 } // namespace microkernel
 
