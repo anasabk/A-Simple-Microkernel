@@ -7,9 +7,9 @@ using namespace microkernel;
 GlobalDescriptorTable::GlobalDescriptorTable()
     : null_ss(0, 0, 0),
       unused_ss(0, 0, 0),
-      code_ss(0, 64*1024*1024, 0x9A),
-      data_ss(0, 64*1024*1024, 0x92),
-      stack_ss(0, 64*1024*1024, 0x96)
+      code_ss(0, 16*1024*1024, 0x9A),
+      data_ss(0, 16*1024*1024, 0x92),
+      stack_ss(0, 16*1024*1024, 0x96)
 {
 }
 

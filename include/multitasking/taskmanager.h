@@ -11,6 +11,7 @@ namespace microkernel
 {
     class Taskmanager : public InterruptHandler
     {
+    friend class Kernel;
     public:
         Taskmanager(InterruptManager* manager);
         ~Taskmanager();
@@ -19,12 +20,16 @@ namespace microkernel
         CPUState* schedule(CPUState* cpu_state);
 
         virtual uint32_t handle_interrupt(uint32_t esp);
+        // Task* get_current_task();
+
+        void print_tasks();
+
+        Task* get_current_task();
 
     private:
         Task* tasks[256];
         uint16_t num_of_tasks;
         uint16_t current_task;
-    
     };
     
 } // namespace microkernel

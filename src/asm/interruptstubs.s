@@ -21,13 +21,11 @@ _ZN11microkernel16InterruptManager29handle_interrupt_request_\num\()Ev:
     jmp int_bottom
 .endm
 
-
-#.global _Z4forkv
-#_Z4forkv:
-#    mov $2, %eax
-#    mov [%ebp + 4], %ebx
-#    int    $0x80
-#    iret
+.global _ZN11microkernel16InterruptManager29handle_interrupt_request_0x80Ev
+_ZN11microkernel16InterruptManager29handle_interrupt_request_0x80Ev:
+    movb $0x80, (interruptnumber)
+    pushl $0
+    jmp int_bottom
 
 
 HandleException 0x00
@@ -69,17 +67,17 @@ HandleInterruptRequest 0x0E
 HandleInterruptRequest 0x0F
 HandleInterruptRequest 0x31
 
-HandleInterruptRequest 0x80
+#HandleInterruptRequest 0x80
+
 
 int_bottom:
 
     # Save register
-    #pusha
     pushl %ds
-    #pushl %es
-    #pushl %fs
-    #pushl %gs
-
+    pushl %es
+    pushl %fs
+    pushl %gs
+    
     pushl %ebp
     pushl %edi
     pushl %esi
@@ -89,25 +87,13 @@ int_bottom:
     pushl %ebx
     pushl %eax
 
-    # load ring 0 segment register
-    #cld
-    #mov $0x10, %eax
-    #mov %eax, %eds
-    #mov %eax, %ees
-
     # Call C++ Handler
     pushl %esp
     push (interruptnumber)
     call _ZN11microkernel16InterruptManager17receive_interruptEhj
-    # add %esp, 6
     mov %eax, %esp # Switch the stack
 
     # Restore register
-    #pop %gs
-    #pop %fs
-    #pop %es
-    #popa
-
     popl %eax
     popl %ebx
     popl %ecx
@@ -117,6 +103,10 @@ int_bottom:
     popl %edi
     popl %ebp
 
+    #pop %gs
+    #pop %fs
+    #pop %es
+    add $12, %esp
     pop %ds
 
     add $4, %esp

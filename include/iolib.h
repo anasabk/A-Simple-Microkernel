@@ -10,7 +10,7 @@ void printf(char* str);
 
 void clearf();
 
-void printf_int(uint32_t num);
+void printf_int(int32_t num);
 
 void printfHex(uint8_t key);
 

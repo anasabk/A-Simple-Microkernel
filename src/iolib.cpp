@@ -43,6 +43,12 @@ void printf(char* str)
     }
 }
 
+void printf(char c) 
+{
+    char buffer[2] = {c, 0};
+    printf(buffer);
+}
+
 void clearf() {
     for(int i = 0; i < 80; ++i)
         for(int j = 0; j < 25; j++)
@@ -52,14 +58,26 @@ void clearf() {
     column = 0;
 }
 
-void printf_int(uint32_t num) {
-    uint32_t temp = num;
-    uint8_t buffer[2] = {0, 0};
-    do {
-        buffer[0] = temp%10 + 48;
-        printf((char*)buffer);
-        temp /= 10;
-    } while(temp > 0);
+void printf_int(int32_t num) {
+    int32_t temp = num;
+    char buffer[32];
+
+    if(temp < 0) {
+        temp *= -1;
+        printf("-");
+    } else if(temp == 0) {
+        printf(48);
+    } else {
+        int i;
+        for(i = 0; temp > 0 && i < 32; i++) {
+            buffer[i] = temp%10 + 48;
+            temp /= 10;
+        }
+
+        for(i--; i >= 0; i--) {
+            printf(buffer[i]);
+        }
+    }
 }
 
 void printfHex(uint8_t key)

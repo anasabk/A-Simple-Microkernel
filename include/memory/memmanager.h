@@ -7,11 +7,9 @@
 namespace microkernel
 {
     struct StackChunk {
-        // uint32_t base_addr;
         size_t size;
         StackChunk* next_chunk;
         bool is_free;
-        //The actual stack lies beyond
     } __attribute__((packed));
 
     class MemManager
@@ -20,6 +18,12 @@ namespace microkernel
         MemManager(GlobalDescriptorTable* gdt);
         ~MemManager();
 
+        /**
+         * @brief Return the base address of a new stack chunk.
+         * 
+         * @param size The size of the new chunk.
+         * @return void* The base address of the stack. 
+         */
         void* get_stack_chunk(uint32_t size);
 
         uint32_t get_base();

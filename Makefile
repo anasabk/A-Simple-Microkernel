@@ -51,7 +51,7 @@ microkernel.iso: microkernel.bin
 
 run: microkernel.iso
 	(killall VirtualBoxVM && sleep 1) || true
-	VirtualBoxVM --startvm "My Micro Kernel" &
+	VirtualBoxVM --startvm "My Micro Kernel" --dbg &
 
 .PHONY: clean
 clean:

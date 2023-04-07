@@ -23,12 +23,17 @@ uint32_t InterruptHandler::handle_interrupt(uint32_t t_esp)
     return t_esp;
 }
 
+void InterruptHandler::set_manager(InterruptManager* t_manager)
+{
+    interrupt_manager = t_manager;
+    t_manager->handlers[interrupt_num] = this;
+}
+
 
 
 
 InterruptManager::GateDescriptor InterruptManager::idt[256];
 InterruptManager* InterruptManager::active_interrupt_manager = nullptr;
-
 
 void InterruptManager::set_idt_entry(
         uint8_t t_interrupt,
@@ -175,20 +180,21 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
         esp = handlers[interrupt]->handle_interrupt(esp);
     
     } else if(interrupt != hardware_interrupt_offset) {
-        char* foo = "UNHANDLED INTERRUPT 0x00\n";
-        char* hex = "0123456789ABCDEF";
-        foo[22] = hex[(interrupt >> 4) & 0xF];
-        foo[23] = hex[interrupt & 0xF];
-        printf(foo);
+        printf("UNHANDLED INTERRUPT: 0x");
+        printfHex(interrupt);
+        printf("\n");
     }
 
-    // if(interrupt == hardwareInterruptOffset) {
-    //     esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
-
-    // } else if (interrupt == 0x0D) {
-    //     printf("General Protection Interrupt\n");
-    //     esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
-    // }
+    if (interrupt == 0x0D) {
+        printf("General Protection Interrupt: ");
+        printfHex32(((CPUState*)esp)->error);
+        printf("\n");
+        asm("int $0x20");
+    } else if (interrupt == 0x06) {
+        printf("Invalid Instruction exception, eip is: 0x");
+        printfHex32(((CPUState*)esp)->eip);
+        printf("\n");
+    }
 
     // hardware interrupts must be acknowledged
     if (hardware_interrupt_offset <= interrupt && 

@@ -4,9 +4,11 @@
 #include "gdt.h"
 #include "common/types.h"
 #include "port.h"
-// #include "multitasking/taskmanager.h"
+#include "multitasking/task.h"
 
 #define IDT_INTERRUPT_GATE 0xE
+#define SYSCALL_INT_NUM 0x80
+#define HARDWARE_INT_OFFSET 0x20
 
 
 namespace microkernel
@@ -17,6 +19,7 @@ namespace microkernel
     {
     public:
         virtual uint32_t handle_interrupt(uint32_t esp);
+        void set_manager(InterruptManager* manager);
 
     protected:
         uint8_t interrupt_num;
@@ -34,7 +37,6 @@ namespace microkernel
     class InterruptManager
     {
     friend class InterruptHandler;
-    
     public:
         /**
          * @brief Construct a new Interrupt Manager object.
