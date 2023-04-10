@@ -67,16 +67,17 @@ void printf_int(int32_t num) {
         printf("-");
     } else if(temp == 0) {
         printf(48);
-    } else {
-        int i;
-        for(i = 0; temp > 0 && i < 32; i++) {
-            buffer[i] = temp%10 + 48;
-            temp /= 10;
-        }
+        return;
+    } 
+    
+    int i;
+    for(i = 0; temp > 0 && i < 32; i++) {
+        buffer[i] = temp%10 + 48;
+        temp /= 10;
+    }
 
-        for(i--; i >= 0; i--) {
-            printf(buffer[i]);
-        }
+    for(i--; i >= 0; i--) {
+        printf(buffer[i]);
     }
 }
 

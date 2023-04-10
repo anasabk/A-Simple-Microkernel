@@ -15,8 +15,8 @@ objects = obj/kernel.o \
 		  obj/asm/interruptstubs.o \
 		  obj/hwcomm/interrupts.o \
 		  obj/drivers/keyboard.o \
-		  obj/multitasking/task.o \
-		  obj/multitasking/taskmanager.o \
+		  obj/multitasking/process.o \
+		  obj/multitasking/processmanager.o \
 		  obj/memory/memmanager.o \
 		#   obj/syscalls.o \
 

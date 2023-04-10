@@ -4,7 +4,7 @@
 #include "gdt.h"
 #include "common/types.h"
 #include "port.h"
-#include "multitasking/task.h"
+#include "multitasking/process.h"
 
 #define IDT_INTERRUPT_GATE 0xE
 #define SYSCALL_INT_NUM 0x80

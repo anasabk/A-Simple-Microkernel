@@ -29,6 +29,7 @@ namespace microkernel
         SegmentDescriptor code_ss;
         SegmentDescriptor data_ss;
         SegmentDescriptor stack_ss;
+        SegmentDescriptor task_ss;
 
     public:
         GlobalDescriptorTable();
@@ -50,6 +51,11 @@ namespace microkernel
          * @brief Get the Stack Segment Selector.
          */
         uint16_t get_sss();
+
+        /**
+         * @brief Get the Stack Segment Selector.
+         */
+        uint16_t get_tss();
         
     };
 
