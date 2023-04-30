@@ -27,18 +27,6 @@ _ZN11microkernel16InterruptManager29handle_interrupt_request_0x80Ev:
     pushl $0
     jmp int_bottom
 
-#.global _ZN11microkernel6Kernel4forkEv
-#_ZN11microkernel6Kernel4forkEv:
-#    push    %ebp
-#    mov     %esp, %ebp
-#    push    %ebx
-#    mov     $0x2, %eax
-#    mov     %edx, %ecx
-#    int     $0x80
-#    mov     %ebx, %eax
-#    leave
-#    iret
-
 
 HandleException 0x00
 HandleException 0x01

@@ -16,10 +16,10 @@ namespace microkernel
         ~ProcessManager();
 
         /**
-         * @brief Add the given task to the list of tasks.
+         * @brief Add the given process to the list of processes.
          * 
-         * @param process The task to be added.
-         * @return The PID of the task if added, -1 if not.
+         * @param process The process to be added.
+         * @return The PID of the process if added, -1 if not.
          */
         uint8_t add_proc(Process* process);
 
@@ -32,30 +32,22 @@ namespace microkernel
          */
         CPUState* schedule(CPUState* cpu_state);
 
-        void exit_proc(uint8_t pid);
+        uint8_t* exit_proc(uint8_t pid);
 
         virtual uint32_t handle_interrupt(uint32_t esp);
 
-        void print_tasks();
+        void print_processes();
 
         void dump_stack();
 
     private:
-        Process* tasks[256];
-        uint16_t num_of_tasks;
-        uint16_t current_task;
+        Process* processes[256];
+        uint16_t num_of_processes;
+        int16_t current_index;
         MemManager process_mem_manager;
-        MemManager stack_manager;
 
-        Process* get_current_task();
+        Process* get_current_process();
         Process* get_process_mem();
-        // uint8_t fork(
-        //     uint8_t pid, 
-        //     GlobalDescriptorTable* t_gdt, 
-        //     uint8_t* t_stack_p, 
-        //     void* t_entry_point,
-        //     CPUState* cpu
-        // );
     };
     
 } // namespace microkernel

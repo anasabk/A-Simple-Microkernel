@@ -18,7 +18,6 @@ objects = obj/kernel.o \
 		  obj/multitasking/process.o \
 		  obj/multitasking/processmanager.o \
 		  obj/memory/memmanager.o \
-		#   obj/syscalls.o \
 
 obj/%.o: src/%.cpp
 	mkdir -p $(@D)

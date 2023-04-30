@@ -159,6 +159,42 @@ uint8_t Process::get_pid() {
     return pid;
 }
 
+void Process::sigchld(Message* t_msg) {
+    if(msg_queue == nullptr) 
+        msg_queue = t_msg;
+    else {
+        Message* prev = nullptr;
+        for(Message* msg = msg_queue;
+            msg != nullptr;
+            prev = msg, msg = msg->next
+        );
+
+        prev->next = msg_queue;
+        msg_queue = prev->next;
+    }
+}
+
+Message* Process::rec_msg(ProcessState state, int16_t pid) {
+    Message* prev = nullptr;
+    for(Message* msg = msg_queue;
+        msg != nullptr;
+        prev = msg, msg = msg->next) 
+    {
+        if (msg->state == state && 
+            (pid == -1 || msg->pid == pid)) 
+        {
+            if(msg == msg_queue)
+                msg_queue = msg->next;
+            else
+                prev->next = msg->next;
+    
+            return msg;
+        }
+    }
+
+    return nullptr;
+}
+
 void microkernel::dump_cpu(CPUState* cpu_state) {
     printf("cpu state: 0x");
     printfHex32(cpu_state->cs);
@@ -166,12 +202,6 @@ void microkernel::dump_cpu(CPUState* cpu_state) {
     printfHex32(cpu_state->ss);
     printf(" 0x");
     printfHex32(cpu_state->ds);
-    // printf(" 0x");
-    // printfHex32(cpu_state->es);
-    // printf(" 0x");
-    // printfHex32(cpu_state->fs);
-    // printf(" 0x");
-    // printfHex32(cpu_state->gs);
     printf(" 0x");
     printfHex32(cpu_state->eax);
     printf(" 0x");

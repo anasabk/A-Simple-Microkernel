@@ -189,11 +189,13 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
         printf("General Protection Interrupt: ");
         printfHex32(((CPUState*)esp)->error);
         printf("\n");
+        dump_cpu((CPUState*)esp);
         asm("int $0x20");
     } else if (interrupt == 0x06) {
         printf("Invalid Instruction exception, eip is: 0x");
         printfHex32(((CPUState*)esp)->eip);
         printf("\n");
+        dump_cpu((CPUState*)esp);
     }
 
     // hardware interrupts must be acknowledged

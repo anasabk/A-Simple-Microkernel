@@ -14,7 +14,7 @@ namespace microkernel
         BLOCKED,
         TERMINATED
     };
-
+    
     class ProcessManager;
 
     struct CPUState
@@ -42,6 +42,12 @@ namespace microkernel
         uint32_t esp;
         uint32_t ss;
     } __attribute__((packed));
+
+    struct Message {
+        ProcessState state;
+        uint8_t pid;
+        Message* next;
+    };
 
     class Process
     {
@@ -86,13 +92,6 @@ namespace microkernel
             Process* t_parent
         );
 
-        void copy(
-            GlobalDescriptorTable* t_gdt,
-            uint8_t* t_stack_p,
-            CPUState* t_cpu_state,
-            Process* t_parent
-        );
-
         void fork(
             GlobalDescriptorTable* t_gdt,
             uint8_t* t_stack_p,
@@ -101,14 +100,6 @@ namespace microkernel
             Process* t_parent
         );
 
-        // void vfork(
-        //     GlobalDescriptorTable* t_gdt,
-        //     uint8_t* t_stack_p,
-        //     void* t_return_addr,
-        //     CPUState* t_cpu_state,
-        //     Process* t_parent
-        // );
-
         CPUState* execve(
             CPUState* t_cpu_state,
             GlobalDescriptorTable* t_gdt,
@@ -116,11 +107,15 @@ namespace microkernel
             void* t_entry_point
         );
 
-        void terminate(CPUState* t_cpu_state, MemManager* mem_manager);
+        // uint8_t* terminate();
 
         uint32_t get_stack_size();
 
         uint8_t get_pid();
+
+        void sigchld(Message* t_msg);
+
+        Message* rec_msg(ProcessState state, int16_t pid);
 
     private:
         CPUState* cpu_state;
@@ -132,6 +127,7 @@ namespace microkernel
         Process* sibling;
         Process* child;
         uint8_t num_of_children;
+        Message* msg_queue;
 
     };
 

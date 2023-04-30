@@ -2,43 +2,45 @@
 
 
 uint16_t* VideoMemory = (uint16_t*)0xb8000;
-uint8_t row = 0, column = 0;
+uint8_t row = 0, column = 0, half = 0;
 
 void printf(char* str) 
 {
     for(int i = 0; str[i] != '\0'; ++i){
         switch(str[i]) {
             case '\n':
-                row = 0;
-                column++;
+                column = half*40;
+                row++;
                 break;
 
             case '\b':
-                if(row > 0) {
-                    row--;
+                if(column > 0) {
+                    column--;
                 }
 
-                VideoMemory[80*column + row] = (VideoMemory[80*column + row] & 0xFF00) | ' ';
+                VideoMemory[80*row + column] = (VideoMemory[80*row + column] & 0xFF00) | ' ';
                 break;
 
             default: 
-                VideoMemory[80*column + row] = (VideoMemory[80*column + row] & 0xFF00) | str[i];
-                row++;
+                VideoMemory[80*row + column] = (VideoMemory[80*row + column] & 0xFF00) | str[i];
+                column++;
                 break;
         }
 
-        if(row > 80) {
-            column++;
-            row = 0;
+        if(column > 80) {
+            row++;
+            column = half*40;
         }
 
-        if(column >= 25) {
-            // for(column = 0; column < 25; column++)
-            //     for(row = 0; row < 80; row++)
-            //         VideoMemory[80*column + row] = (VideoMemory[80*column + row] & 0xFF00) | ' ';
-            // row = 0;
-            // column = 0;
-            column--;
+        if(row >= 25) {
+            half = half ? 0 : 1;
+            for(row = 0; row < 25; row++)
+                for(column = half*40; column < 40 + half*40; column++)
+                    VideoMemory[80*row + column] = (VideoMemory[80*row + column] & 0xFF00) | ' ';
+
+            row = 0;
+            column = half*40;
+            // row--;
         }
     }
 }

@@ -14,7 +14,6 @@ Kernel::Kernel()
       gdt(),
       process_manager(&interrupt_manager, &gdt),
       ss_manager(gdt.get_sss()),
-    //   ts_manager(gdt.get_tss()),
       keyboard_driver(&interrupt_manager)
 {
     set_manager(&interrupt_manager);
@@ -25,9 +24,9 @@ Kernel::~Kernel()
 {
 }
 
-uint16_t Kernel::get_pid() 
+uint16_t Kernel::get_current_pid() 
 {
-    return active_kernel->process_manager.current_task;
+    return active_kernel->process_manager.get_current_process()->get_pid();
 }
 
 uint32_t Kernel::handle_interrupt(uint32_t esp) 
@@ -36,35 +35,27 @@ uint32_t Kernel::handle_interrupt(uint32_t esp)
 
     switch (cpu->eax)
     {
-    case 2: {
-
-#ifdef DEBUG_FLAG
-        printf("instruction pointer: ");
-        printfHex32(cpu->eip);
-        printf("\n");
-#endif
-        // dump_cpu((CPUState*)cpu);
-        cpu->ebx = sys_fork(esp, (void*)cpu->ecx);
+    case 1: {
+        sys_exit();
+        return (uint32_t)process_manager.schedule(cpu);
     }
     break;
+
+    case 2:
+        cpu->ebx = sys_fork(esp, (void*)cpu->ecx);
+        break;
 
     case 4:
         printf((char*)cpu->ebx);
         break;
 
-    case 11: {
-#ifdef DEGBUG_FLAG
-        printf("instruction pointer: ");
-        printfHex32(cpu->ebx);
-        printf("\n");
-        printf("parameter pointer: ");
-        printfHex32(cpu->ecx);
-        printf("\n");
-#endif
+    case 7: 
+        cpu->edx = (uint32_t)sys_waitpid((int16_t)cpu->ebx, (ProcessState)cpu->ecx);
+        break;
+
+    case 11:
         return (uint32_t)sys_execve(esp, (char*)cpu->ebx, (char**)cpu->ecx);
-        // process_manager.schedule(cpu);
-    }
-    break;
+        break;
 
     default:
         break;
@@ -75,7 +66,7 @@ uint32_t Kernel::handle_interrupt(uint32_t esp)
 
 uint8_t Kernel::create_task(void* t_entry_point, uint32_t t_stack_size) {
     Process* current_task = 
-        process_manager.get_current_task();
+        process_manager.get_current_process();
 
     Process* new_task = process_manager.get_process_mem();
     
@@ -99,7 +90,7 @@ uint8_t Kernel::sys_fork(uint32_t esp, void* t_return_addr) {
     CPUState* cpu = (CPUState*)esp;
 
     Process* current_task = 
-        process_manager.get_current_task();
+        process_manager.get_current_process();
 
     Process* new_task = process_manager.get_process_mem();
     
@@ -121,21 +112,31 @@ uint8_t Kernel::sys_fork(uint32_t esp, void* t_return_addr) {
 }
 
 CPUState* Kernel::sys_execve(uint32_t esp, char *const pathname, char *const argv[]) {
-    printf("changing execution\n");
+    // printf("changing execution\n");
     CPUState* cpu = (CPUState*)esp;
     Process* current_task = 
-        process_manager.tasks[process_manager.current_task];
+        process_manager.get_current_process();
 
     return current_task->execve(cpu, &gdt, (void**)argv, (void*)pathname);
 }
 
-void Kernel::sys_exit(uint32_t esp) {
-    printf("Exiting\n");
-    CPUState* cpu = (CPUState*)esp;
+void Kernel::sys_exit() {
+    ss_manager.free(process_manager.exit_proc(get_current_pid()));
+}
+
+int16_t Kernel::sys_waitpid(int16_t pid, ProcessState state) {
+    // printf("Waiting\n");
     Process* current_task = 
-        process_manager.tasks[process_manager.current_task];
-    
-    // current_task->terminate(cpu, &mem_manager);
+        process_manager.get_current_process();
+
+    Message* msg = current_task->rec_msg(state, pid);
+    if(msg != nullptr){
+        int16_t target = msg->pid;
+        process_manager.process_mem_manager.free(msg);
+        return target;
+    } else {
+        return -1;
+    }
 }
 
 
@@ -199,6 +200,7 @@ int32_t linear_search(int32_t* arr, size_t len, int32_t target) {
 
 void collatz_sequence(uint32_t num) {
     if(num == 1) {
+        // printf(" finished\n");
         return;
     } else if(num % 2 == 0) {
         printf_int(num/2);
@@ -209,6 +211,8 @@ void collatz_sequence(uint32_t num) {
         printf(" ");
         collatz_sequence(num*3+1);
     }
+    // printf("coming back\n");
+    return;
 }
 
 struct search_param {
@@ -235,19 +239,7 @@ void task_collatz_sequence(void* param) {
 }
 
 void task_binary_search(void* param) {
-    // printfHex32((uint32_t)bs_arr);
-    // printf(" ");
-    // Kernel::dump_stack();
-    printfHex32((uint32_t)&param);
-    printf(" ");
-    printfHex32((uint32_t)param);
-    printf(" ");
     printf("binary search: ");
-    printf_int(((struct search_param*)param)->length);
-    printf(" "); 
-    printf_int(((struct search_param*)param)->target);
-    printf(" ");
-
     printf_int(
         binary_search(
             ((struct search_param*)param)->arr, 
@@ -255,25 +247,15 @@ void task_binary_search(void* param) {
             ((struct search_param*)param)->target
         )
     );
-
     printf("\n");
 
-    while(1);
+    Kernel::exit();
+
+    // while(1);
 }
 
 void task_linear_search(void* param) {
-    printfHex32((uint32_t)&param);
-    printf(" ");
-    printfHex32((uint32_t)param);
-    printf(" ");
     printf("linear search: ");
-    // printf_int((uint32_t)((struct search_param*)param)->arr);
-    // printf(" ");
-    printf_int(((struct search_param*)param)->length);
-    printf(" "); 
-    printf_int(((struct search_param*)param)->target);
-    printf(" ");
-
     printf_int(
         linear_search(
             ((struct search_param*)param)->arr, 
@@ -281,10 +263,11 @@ void task_linear_search(void* param) {
             ((struct search_param*)param)->target
         )
     );
-
     printf("\n");
 
-    while(1);
+    Kernel::exit();
+
+    // while(1);
 }
 
 void init() {
@@ -342,48 +325,99 @@ struct search_param ls_param = {ls_arr, ls_length, ls_target};
 
 int32_t collatz_in = 7;
 
+void Kernel::get_processes() {
+    active_kernel->process_manager.print_processes();
+}
+
 void init1() {
-    // if(Kernel::fork() == 0)
-    //     Kernel::execve((char*)task_binary_search, (char *const *)&bs_param, nullptr);
+    int16_t pid;
 
-    // if(Kernel::fork() == 0)
-    //     Kernel::execve((char*)task_linear_search, (char *const *)&ls_param, nullptr);
+    if((pid = Kernel::fork()) == 0)
+        Kernel::execve((char*)task_binary_search, (void*)&bs_param);
+    else {
+        printf("Binary search forked with pid ");
+        printf_int(pid);
+        printf("\n");
+    }
 
-    if(Kernel::fork() == 0)
-        Kernel::execve((char*)collatz_sequence, (char *const *)collatz_in, nullptr);
+    if((pid = Kernel::fork()) == 0)
+        Kernel::execve((char*)task_linear_search, (void*)&ls_param);
+    else {
+        printf("Linear search forked with pid ");
+        printf_int(pid);
+        printf("\n");
+    }
 
-    // Wait for all child processes to exit
-    // ProcessState state = READY;
-    // while(wait(&state) != 0);
-    // printf("All child processes has finished\n");
-    while(1);
+    // if((pid = Kernel::fork()) == 0)
+    //     Kernel::execve((char*)collatz_sequence, (void*)collatz_in);
+    // else {
+    //     printf("Collatz Sequence forked with pid ");
+    //     printf_int(pid);
+    //     printf("\n");
+    // }
+
+    // Kernel::get_processes();
+
+    while(1) {
+        pid = Kernel::waitpid(-1, TERMINATED);
+        if(pid != -1) {
+            printf("Process exited with pid ");
+            printf_int(pid);
+            printf("\n");
+        }
+    }
 }
 
 void init2() {
-    for(int i = 0; i < 10; i++)
-        if(Kernel::fork() == 0)
-            Kernel::execve((char*)task_binary_search, (char *const *)&bs_param, nullptr);
+    int16_t pid;
+    for(int i = 0; i < 10; i++){
+        if((pid = Kernel::fork()) == 0)
+            Kernel::execve((char*)task_binary_search, (void*)&bs_param);
+        else {
+            printf("Binary search forked with pid ");
+            printf_int(pid);
+            printf("\n");
+        }
+    }
 
-    // Wait for all child processes to exit
-    // ProcessState state = READY;
-    // while(wait(&state) != 0);
-    // printf("All child processes has finished\n");
-    while(1);
+    while(1) {
+        pid = Kernel::waitpid(-1, TERMINATED);
+        if(pid != -1) {
+            printf("Process exited with pid ");
+            printf_int(pid);
+            printf("\n");
+        }
+    }
 }
 
 void init3() {
+    int16_t pid;
     for(int i = 0; i < 3; i++){
-        if(Kernel::fork() == 0)
-            Kernel::execve((char*)task_binary_search, (char *const *)&bs_param, nullptr);
-        if(Kernel::fork() == 0)
-            Kernel::execve((char*)task_linear_search, (char *const *)&ls_param, nullptr);
+        if((pid = Kernel::fork()) == 0)
+            Kernel::execve((char*)task_binary_search, (void*)&bs_param);
+        else {
+            printf("Binary search forked with pid ");
+            printf_int(pid);
+            printf("\n");
+        }
+
+        if((pid = Kernel::fork()) == 0)
+            Kernel::execve((char*)task_linear_search, (void*)&ls_param);
+        else {
+            printf("Linear search forked with pid ");
+            printf_int(pid);
+            printf("\n");
+        }
     }
 
-    // Wait for all child processes to exit
-    // ProcessState state = READY;
-    // while(wait(&state) != 0);
-    // printf("All child processes has finished\n");
-    while(1);
+    while(1) {
+        pid = Kernel::waitpid(-1, TERMINATED);
+        if(pid != -1) {
+            printf("Process exited with pid ");
+            printf_int(pid);
+            printf("\n");
+        }
+    }
 }
 
 
@@ -407,7 +441,7 @@ void Kernel::run()
     
     interrupt_manager.activate();
     
-    create_task((void*)init2, 4096);
+    create_task((void*)init3, 4096);
 
     while(1);
 }
@@ -424,11 +458,12 @@ void Kernel::exit() {
     asm("int $0x80" : : "a" (1));
 }
 
-void Kernel::sys_printf(char* str) {
-    asm("int $0x80" : : "a" (4), "b" (str));
+int16_t Kernel::waitpid(uint16_t pid, ProcessState status) {
+    int16_t result;
+    asm("int $0x80" : "=d" (result) : "a" (7), "b" (pid), "c" (status));
+    return result;
 }
 
-int Kernel::execve(const char *pathname, char *const argv[], char *const envp[]) {
-    // dump_stack();
-    asm("int $0x80" : : "a" (11), "b" (pathname), "c" (argv), "d" (envp));
+int Kernel::execve(void* pathname, void* argv) {
+    asm("int $0x80" : : "a" (11), "b" (pathname), "c" (argv));
 }

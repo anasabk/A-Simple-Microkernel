@@ -35,26 +35,28 @@ namespace microkernel
         uint8_t sys_fork(uint32_t esp, void* t_return_addr);
         // void sys_vfork(uint32_t esp, void* t_return_addr);
         CPUState* sys_execve(uint32_t esp, char *const pathname, char *const argv[]);
-        void sys_exit(uint32_t esp);
+        int16_t sys_waitpid(int16_t pid, ProcessState status);
+        void sys_exit();
 
         virtual uint32_t handle_interrupt(uint32_t esp);
 
         static uint16_t fork();
         static void exit();
-        // static volatile uint16_t vfork();
+        static int16_t waitpid(uint16_t pid, ProcessState status);
         static void sys_printf(char* str);
-        static int execve(const char *pathname, char *const argv[], char *const envp[]);
+        static int execve(void* pathname, void* argv);
 
-        static uint16_t get_pid();
+        static uint16_t get_current_pid();
 
         static void dump_stack();
+
+        static void get_processes();
 
     private:
         GlobalDescriptorTable gdt;
         InterruptManager interrupt_manager;
         ProcessManager process_manager;
         MemManager ss_manager; // Stack Segment Manager
-        // MemManager ts_manager; // Task Segment Manager
         Keyboard keyboard_driver;
 
         static Kernel* active_kernel;
