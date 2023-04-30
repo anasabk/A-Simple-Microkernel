@@ -8,13 +8,6 @@
 
 namespace microkernel
 {
-    enum ProcessState {
-        RUNNING,
-        READY,
-        BLOCKED,
-        TERMINATED
-    };
-    
     class ProcessManager;
 
     struct CPUState
@@ -43,6 +36,13 @@ namespace microkernel
         uint32_t ss;
     } __attribute__((packed));
 
+    enum ProcessState {
+        RUNNING,
+        READY,
+        BLOCKED,
+        TERMINATED
+    };
+
     struct Message {
         ProcessState state;
         uint8_t pid;
@@ -52,22 +52,19 @@ namespace microkernel
     class Process
     {
     friend class ProcessManager;
-
     public:
-        // Process();
-        
         /**
          * @brief Construct a new Task object.
          * 
-         * @param t_gdt The Global Descriptor Table.
-         * @param t_entry_point Pointer to the instruction to start from.
-         * @param t_stack_p Pointer to the stack of the stask. 
+         * @param t_gdt Pointer to the global descriptor table.
+         * @param t_entry_point Pointer to the first instruction in execution.
+         * @param t_stack_p Pointer to the stack. 
          * (Should be in the stack segment of the given gdt)
-         * @param t_parent The of this task. 
+         * @param t_parent Pointer to the parent process entry.
          */
         Process(
             GlobalDescriptorTable* t_gdt, 
-            void* t_entry_point, 
+            void(* t_entry_point)(), 
             uint8_t* t_stack_p,
             uint32_t t_stack_size,
             Process* t_parent
@@ -78,43 +75,46 @@ namespace microkernel
         /**
          * @brief Modify the the info of a task.
          * 
-         * @param t_gdt 
-         * @param t_entry_point 
-         * @param t_stack_p 
-         * @param stack_size 
-         * @param t_parent 
+         * @param t_gdt Pointer to the global descriptor table.
+         * @param t_entry_point Pointer to the first instruction in execution.
+         * @param t_stack_p Pointer to the stack. 
+         * (Should be in the stack segment of the given gdt)
+         * @param stack_size Size of the stack.
+         * @param t_parent Pointer to the parent process entry.
          */
         void setup(
             GlobalDescriptorTable* t_gdt, 
-            void* t_entry_point, 
+            void(* t_entry_point)(), 
             uint8_t* t_stack_p,
-            uint32_t stack_size,
-            Process* t_parent
+            uint32_t stack_size
         );
 
-        void fork(
-            GlobalDescriptorTable* t_gdt,
-            uint8_t* t_stack_p,
-            void* t_return_addr,
-            CPUState* t_cpu_state,
-            Process* t_parent
-        );
-
-        CPUState* execve(
-            CPUState* t_cpu_state,
-            GlobalDescriptorTable* t_gdt,
-            void** param,
-            void* t_entry_point
-        );
-
-        // uint8_t* terminate();
-
+        /**
+         * @brief Get the stack size.
+         */
         uint32_t get_stack_size();
 
+        /**
+         * @brief Get the pid of the process.
+         */
         uint8_t get_pid();
 
-        void sigchld(Message* t_msg);
+        /**
+         * @brief Send msg to the parent.
+         * 
+         * @param t_msg The message to be sent.
+         */
+        void sig_to_parent(Message* t_msg);
 
+        /**
+         * @brief Search for the message with the given state 
+         * and pid and return a pointer to it if found. If not, 
+         * return nullptr.
+         * 
+         * @param state State of the message.
+         * @param pid PID of the sender of the message.
+         * @return Pointer to the message, or nullptr.
+         */
         Message* rec_msg(ProcessState state, int16_t pid);
 
     private:
@@ -127,11 +127,10 @@ namespace microkernel
         Process* sibling;
         Process* child;
         uint8_t num_of_children;
-        Message* msg_queue;
+        Message* msg_queue_head;
+        Message* msg_queue_tail;
 
     };
-
-    void dump_cpu(CPUState* state);
     
 } // namespace microkernel
 

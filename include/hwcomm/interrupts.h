@@ -1,5 +1,5 @@
-#ifndef __MYOS__HWCOMM__INTERRUPTMANAGER_H
-#define __MYOS__HWCOMM__INTERRUPTMANAGER_H
+#ifndef __HWCOMM__INTERRUPTMANAGER_H__
+#define __HWCOMM__INTERRUPTMANAGER_H__
 
 #include "gdt.h"
 #include "common/types.h"
@@ -7,6 +7,7 @@
 #include "multitasking/process.h"
 
 #define IDT_INTERRUPT_GATE 0xE
+#define IDT_DESC_PRESENT 0x80
 #define SYSCALL_INT_NUM 0x80
 #define HARDWARE_INT_OFFSET 0x20
 

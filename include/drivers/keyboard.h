@@ -2,15 +2,16 @@
 #define __KEYBOARD_H__
 
 #include "hwcomm/interrupts.h"
+#include "multitasking/processmanager.h"
 
 
 namespace microkernel
 {
-    class Keyboard : public InterruptHandler
+    class KeyboardDriver : public InterruptHandler
     {
     public:
-        Keyboard(InterruptManager* manager);
-        ~Keyboard();
+        KeyboardDriver(InterruptManager* manager);
+        ~KeyboardDriver();
 
         virtual uint32_t handle_interrupt(uint32_t esp);
 

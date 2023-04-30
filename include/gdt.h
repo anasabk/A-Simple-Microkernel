@@ -1,5 +1,5 @@
-#ifndef __MYOS__GDT_H_
-#define __MYOS__GDT_H_
+#ifndef __MYOS__GDT_H__
+#define __MYOS__GDT_H__
 
 #include "common/types.h"
 #include "iolib.h"

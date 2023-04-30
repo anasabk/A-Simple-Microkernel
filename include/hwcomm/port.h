@@ -1,5 +1,5 @@
-#ifndef __MYOS__HWCOMM__PORT_H_
-#define __MYOS__HWCOMM__PORT_H_
+#ifndef __HWCOMM__PORT_H__
+#define __HWCOMM__PORT_H__
 
 #include "common/types.h"
 

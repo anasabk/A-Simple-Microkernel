@@ -1,7 +1,7 @@
 #include "hwcomm/interrupts.h"
 
-
 using namespace microkernel;
+
 
 InterruptHandler::InterruptHandler(
     InterruptManager* t_interrupt_manager, 
@@ -30,8 +30,6 @@ void InterruptHandler::set_manager(InterruptManager* t_manager)
 }
 
 
-
-
 InterruptManager::GateDescriptor InterruptManager::idt[256];
 InterruptManager* InterruptManager::active_interrupt_manager = nullptr;
 
@@ -47,8 +45,6 @@ void InterruptManager::set_idt_entry(
     idt[t_interrupt].handler_addr_lo = ((uint32_t) t_handler) & 0xFFFF;
     idt[t_interrupt].handler_addr_hi = (((uint32_t) t_handler) >> 16) & 0xFFFF;
     idt[t_interrupt].gdt_css = t_css_offset;
-
-    const uint8_t IDT_DESC_PRESENT = 0x80;
 
     idt[t_interrupt].access = 
         IDT_DESC_PRESENT | 
@@ -70,8 +66,7 @@ InterruptManager::InterruptManager(
     this->hardware_interrupt_offset = t_hardware_interrupt_offset;
     uint32_t code_segment = t_gdt->get_css();
 
-    for(uint8_t i = 255; i > 0; --i)
-    {
+    for(uint8_t i = 255; i > 0; --i) {
         set_idt_entry(i, code_segment, &ignore_interrupt, 0, IDT_INTERRUPT_GATE);
         handlers[i] = 0;
     }
@@ -186,16 +181,14 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
     }
 
     if (interrupt == 0x0D) {
-        printf("General Protection Interrupt: ");
+        printf("General Protection Exception, error is: 0x");
         printfHex32(((CPUState*)esp)->error);
         printf("\n");
-        dump_cpu((CPUState*)esp);
         asm("int $0x20");
     } else if (interrupt == 0x06) {
-        printf("Invalid Instruction exception, eip is: 0x");
+        printf("Invalid Instruction Exception, eip is: 0x");
         printfHex32(((CPUState*)esp)->eip);
         printf("\n");
-        dump_cpu((CPUState*)esp);
     }
 
     // hardware interrupts must be acknowledged

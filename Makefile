@@ -1,23 +1,29 @@
-CURRENT_PATH = $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 SEARCH_PATH = include
-OBJ_PATH = obj
 
-GPPPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -I$(SEARCH_PATH)
+GPPPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -I$(SEARCH_PATH)
 ASPARAMS = --32
 LDPARAMS = -melf_i386
 
-objects = obj/kernel.o \
-		  obj/gdt.o \
+objects = obj/gdt.o \
 		  obj/asm/loader.o \
 		  obj/main.o \
 		  obj/iolib.o \
           obj/hwcomm/port.o \
 		  obj/asm/interruptstubs.o \
 		  obj/hwcomm/interrupts.o \
+		  obj/drivers/mouse.o \
 		  obj/drivers/keyboard.o \
 		  obj/multitasking/process.o \
 		  obj/multitasking/processmanager.o \
 		  obj/memory/memmanager.o \
+		  obj/kernel.o \
+		  obj/common/tests.o
+
+flavors = obj/flavor1.o \
+		  obj/flavor2.o \
+		  obj/flavor3.o
+		  
+flavor ?= flavor1
 
 obj/%.o: src/%.cpp
 	mkdir -p $(@D)
@@ -27,8 +33,8 @@ obj/%.o: src/%.s
 	mkdir -p $(@D)
 	as $(ASPARAMS) -o $@ $<
 
-microkernel.bin: linker.ld $(objects)
-	ld $(LDPARAMS) -T $< -o $@ $(objects)
+microkernel.bin: linker.ld $(objects) obj/$(flavor).o
+	ld $(LDPARAMS) -T $< -o $@ $(objects) obj/$(flavor).o
 
 install: microkernel.bin
 	sudo cp $< /boot/microkernel.bin
